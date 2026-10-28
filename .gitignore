@@ -1,0 +1,53 @@
+build/
+.vs/
+.vscode/
+*.obj
+*.o
+*.exe
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles/
+
+# --- Retail game data: never commit (copyrighted) ---
+assets/
+orig/*/*
+!orig/*/.gitkeep
+extract/
+# Disc images
+*.iso
+*.ciso
+*.gcm
+*.gcz
+*.rvz
+*.wia
+*.wbfs
+*.nkit.*
+*.xiso
+*.cso
+# Executables / boot files
+*.dol
+*.rel
+*.elf
+*.xbe
+*.irx
+*.IRX
+apploader.img
+bi2.bin
+boot.bin
+fst.bin
+SLUS_*
+SLES_*
+SLPM_*
+# Game containers and media
+*.war
+*.pak
+*.PAK
+*.thp
+*.xmv
+*.pss
+*.PSS
+*.str
+*.dsp
+*.vag
+*.xwb
+*.xsb
