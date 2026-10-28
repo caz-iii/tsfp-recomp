@@ -51,3 +51,6 @@ SLPM_*
 *.vag
 *.xwb
 *.xsb
+
+# Generated from the user's retail main.dol by ppcrecomp: copyrighted, never commit
+gen/

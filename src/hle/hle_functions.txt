@@ -1,0 +1,7 @@
+# Guest functions (symbols.txt names) replaced by native hle_<name>() implementations.
+# A line "trace:<name>" instead logs every call to <name> with its arguments (debugging aid).
+OSLoadContext
+OSSetIdleFunction
+vm_range_writeback
+OSReport
+DVDConvertPathToEntrynum
