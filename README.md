@@ -8,23 +8,26 @@ tsfp-recomp is the playable PC port produced by the OpenMonkey project. The targ
 
 The port is a native x86-64 executable. It uses a **hybrid** approach so that playability doesn't wait on the full decompilation:
 
-1. **Static recompilation.** A build-time tool translates every PowerPC function in the GameCube `main.dol` into C. It uses function boundaries from `tsfp-decomp/config/G3FE69/symbols.txt` and runs against a guest CPU context and big-endian guest RAM. The host compiler turns the result into the executable. Nothing is emulated or interpreted at runtime.
-2. **SDK replacement (HLE).** Dolphin SDK entry points are swapped, by symbol name, for native implementations:
+1. **Static recompilation.** A build-time tool (`ppcrecomp`) translates every PowerPC function in the GameCube `main.dol` into C++. It uses function boundaries from `tsfp-decomp/config/G3FE69/symbols.txt` and runs against a guest CPU context and big-endian guest RAM. The host compiler turns the result into the executable. Nothing is emulated or interpreted at runtime.
+2. **Native hardware, recompiled SDK.** The Dolphin SDK (OS, GX, DVD, PAD, AX, ...) is part of `main.dol` and runs as recompiled code like the rest of the game. Native code replaces the **hardware** underneath it, at the register and interrupt level:
 
-   | SDK | Replacement |
+   | Hardware | Native implementation |
    |---|---|
-   | GX | OpenGL renderer (TEV → shaders) |
-   | VI | SDL3 window and present |
-   | PAD/SI | SDL3 gamepad, keyboard, and mouse |
-   | DVD | Host filesystem over extracted assets |
-   | AX/AI/DSP/ARQ | SDL3 audio |
-   | CARD | Save files |
-   | OS | Threads, alarms, and timers on host primitives |
+   | PI | Interrupt controller, delivered to guest code at loop-head poll points |
+   | VI | 59.94 Hz retrace interrupts; frames presented through an SDL3 window |
+   | GX FIFO / PE | FIFO command parser feeding an OpenGL renderer (TEV → GLSL) |
+   | DI | Virtual disc built from the extracted disc's FST, with scheduled (not instant) completions |
+   | SI | Pads backed by SDL3 gamepad and keyboard |
+   | AI / DSP | AX command-list mixer to SDL3 audio |
+   | ARAM | Auxiliary RAM and its DMA |
+   | EXI | IPL chip (RTC, SRAM); no memory card yet |
+
+   A handful of guest functions are replaced by native code, listed in `src/hle/hle_functions.txt`: `OSLoadContext` (longjmp), `OSSetIdleFunction` (the idle thread becomes a host fiber), `OSReport` (host log), `DVDConvertPathToEntrynum` (logs missing paths), and the game's `vm_range_writeback` (its ARAM VM window maps straight onto ARAM).
 3. **Decomp swap-in.** Matched translation units from [tsfp-decomp](../tsfp-decomp) are linked through the same recompiler at first. Each subsystem is then ported to native, endian-aware C++ once it is fully decompiled, until the recompiled layer is gone.
 
 ### Assets
 
-Users supply their own disc image of Future Perfect from any region or platform (GameCube `.iso`/`.ciso`/`.rvz`, PS2 `.iso`, Xbox `.xiso`). The asset tool reads each platform's containers (GameCube per-level `.war`, PS2/Xbox `.pak` bundles), converts textures and audio to common formats, and writes a loose-file tree for the game to load. No game data is distributed.
+Users supply their own copy of the game. No game data is distributed. Today the port loads an extracted NTSC-U GameCube disc (`sys/` and `files/`); see [Running](#running). Planned: an asset tool that accepts a disc image from any region or platform (GameCube `.iso`/`.ciso`/`.rvz`, PS2 `.iso`, Xbox `.xiso`), reads each platform's containers (GameCube per-level `.war`, PS2/Xbox `.pak` bundles), and writes a loose-file tree for the game to load.
 
 ## Status
 
